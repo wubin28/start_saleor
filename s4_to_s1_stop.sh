@@ -7,7 +7,7 @@ echo "开始关闭所有服务..."
 
 # 1. 运行 s4_stop_ngrok.sh
 echo "步骤 1/4: 关闭 Ngrok..."
-bash /Users/binwu/OOR-local/katas/start_saleor/s4_stop_ngrok.sh
+bash /Users/binwu/OOR-local/katas/saleor/start_saleor/s4_stop_ngrok.sh
 
 # 2. 等待1秒
 echo "等待 1 秒..."
@@ -15,7 +15,7 @@ sleep 1
 
 # 3. 运行 s3_stop_dummy_payment_app.sh
 echo "步骤 2/4: 关闭 Dummy Payment App..."
-bash /Users/binwu/OOR-local/katas/start_saleor/s3_stop_dummy_payment_app.sh
+bash /Users/binwu/OOR-local/katas/saleor/start_saleor/s3_stop_dummy_payment_app.sh
 
 # 4. 等待1秒
 echo "等待 1 秒..."
@@ -23,7 +23,7 @@ sleep 1
 
 # 5. 运行 s2_stop_storefront.sh
 echo "步骤 3/4: 关闭 Storefront..."
-bash /Users/binwu/OOR-local/katas/start_saleor/s2_stop_storefront.sh
+bash /Users/binwu/OOR-local/katas/saleor/start_saleor/s2_stop_storefront.sh
 
 # 6. 等待1秒
 echo "等待 1 秒..."
@@ -31,7 +31,7 @@ sleep 1
 
 # 7. 运行 s1_stop_saleor.sh
 echo "步骤 4/4: 关闭 Saleor..."
-bash /Users/binwu/OOR-local/katas/start_saleor/s1_stop_saleor.sh
+bash /Users/binwu/OOR-local/katas/saleor/start_saleor/s1_stop_saleor.sh
 
 # 8. 等待1秒
 echo "等待 1 秒..."

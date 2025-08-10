@@ -4,7 +4,7 @@
 # 功能：在当前终端窗口停止Saleor Platform容器
 
 # 切换到Saleor Platform目录
-cd /Users/binwu/OOR-local/katas/saleor-platform
+cd /Users/binwu/OOR-local/katas/saleor/saleor-platform
 
 # 显示停止信息
 echo "正在停止Saleor Platform容器..."

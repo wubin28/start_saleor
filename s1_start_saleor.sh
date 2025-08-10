@@ -13,7 +13,7 @@ tell application "iTerm"
     -- 获取当前会话
     tell current session of current window
         -- 执行第一个命令：切换目录
-        write text "cd /Users/binwu/OOR-local/katas/saleor-platform"
+        write text "cd /Users/binwu/OOR-local/katas/saleor/saleor-platform"
         
         -- 等待一小段时间确保命令执行完成
         delay 0.5

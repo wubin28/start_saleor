@@ -21,7 +21,7 @@
    - 打开 iTerm2 终端
    - 进入项目目录：
      ```bash
-     cd /Users/binwu/OOR-local/katas/start_saleor
+     cd /Users/binwu/OOR-local/katas/saleor/start_saleor
      ```
    - 运行saleor启动脚本（该脚本会依次启动 saleor、storefront、dummy payment app 和 ngrok 并安装 dummy payment app）：
      ```bash
