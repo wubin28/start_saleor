@@ -9,15 +9,21 @@ This project provides a set of scripts to demonstrate Saleor e-commerce function
 - Python 3
 - curl
 - Chrome browser
+- Node.js with npm/npx (for end-to-end testing)
+- Playwright for end-to-end testing
 
 ## Project Structure
 
 ```
-start_saleor/
-├── s1_start_saleor_and_place_order_by_graphql.sh   # Start Saleor and place order via GraphQL
-├── s2_to_s4_start_and_place_order_by_storefront.sh # Start all services and place order via Storefront
-├── s4_to_s1_stop.sh                                # Stop all services
-└── other utility scripts...
+saleor/
+├── start_saleor/
+│   ├── s1_start_saleor_and_place_order_by_graphql.sh   # Start Saleor and place order via GraphQL
+│   ├── s2_to_s4_start_and_place_order_by_storefront.sh # Start all services and place order via Storefront
+│   ├── s4_to_s1_stop.sh                                # Stop all services
+│   └── other utility scripts...
+└── e2e_testing_for_saleor_happy_path/               # End-to-end test suite
+    └── tests/
+        └── production-ready.spec.ts                 # E2E test scenarios
 ```
 
 ## Quick Start
@@ -59,10 +65,24 @@ Note: If you encounter a cookie error when accessing http://localhost:3000/, cle
 
 You should see webhook POST notifications for the order events.
 
-### 3. Stopping the Services
+### 3. Run End-to-End Tests
+
+After completing steps 1 and 2, you can run the end-to-end tests to verify the entire flow:
 
 ```bash
-cd start_saleor
+# Navigate to the E2E test directory
+cd ../e2e_testing_for_saleor_happy_path
+
+# Run the end-to-end tests using Playwright
+npx playwright test tests/production-ready.spec.ts --project=chromium
+```
+
+### 4. Stopping the Services
+
+When you're done with testing, stop all services:
+
+```bash
+cd ../start_saleor
 ./s4_to_s1_stop.sh
 ```
 
