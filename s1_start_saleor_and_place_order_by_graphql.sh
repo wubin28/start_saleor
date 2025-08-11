@@ -374,13 +374,54 @@ except:
     fi
 }
 
+# 自动填充Saleor示例数据
+auto_populate_saleor_data() {
+    print_step "2.0" "自动填充Saleor示例数据"
+    print_warning "未找到产品数据，正在自动运行 populatedb 命令..."
+    
+    # 使用AppleScript在新的iTerm2窗口中运行populatedb命令
+    print_info "在新iTerm2窗口中运行 populatedb 命令..."
+    
+    osascript <<EOF
+tell application "iTerm"
+    activate
+    
+    -- 创建新窗口
+    create window with default profile
+    
+    -- 获取当前会话
+    tell current session of current window
+        -- 切换到saleor-platform目录
+        write text "cd /Users/binwu/OOR-local/katas/saleor/saleor-platform"
+        delay 1
+        
+        -- 运行populatedb命令
+        write text "echo '开始运行 populatedb 命令...'"
+        write text "docker compose run --rm api python3 manage.py populatedb"
+        delay 1
+        
+        -- 等待命令完成（预计需要15秒）
+        write text "echo 'populatedb 命令执行完成'"
+    end tell
+end tell
+EOF
+    
+    print_info "等待15秒让 populatedb 命令完成..."
+    sleep 15
+    
+    print_success "populatedb 命令执行完成，继续获取产品数据..."
+}
+
 # 获取产品Variant ID
 get_product_variant() {
     local user_token="$1"
+    local retry_count=0
+    local max_retries=1
     
-    print_step "2.1" "获取产品Variant ID"
-    
-    local get_products_query='query GetProducts {
+    while [ $retry_count -le $max_retries ]; do
+        print_step "2.1" "获取产品Variant ID$([ $retry_count -gt 0 ] && echo " (重试 $retry_count/$max_retries)" || echo "")"
+        
+        local get_products_query='query GetProducts {
   products(first: 5) {
     edges {
       node {
@@ -402,16 +443,16 @@ get_product_variant() {
     }
   }
 }'
-    
-    local products_response=$(execute_graphql_simple "$get_products_query" "$user_token" "获取产品列表")
-    
-    if [ -z "$products_response" ]; then
-        print_error "产品查询请求失败"
-        return 1
-    fi
-    
-    # 提取第一个variant ID
-    local variant_id=$(echo "$products_response" | python3 -c "
+        
+        local products_response=$(execute_graphql_simple "$get_products_query" "$user_token" "获取产品列表")
+        
+        if [ -z "$products_response" ]; then
+            print_error "产品查询请求失败"
+            return 1
+        fi
+        
+        # 提取第一个variant ID
+        local variant_id=$(echo "$products_response" | python3 -c "
 import sys, json
 try:
     data = json.load(sys.stdin)
@@ -424,15 +465,25 @@ try:
 except:
     pass
 " 2>/dev/null)
+        
+        if [ -n "$variant_id" ]; then
+            print_success "获取到产品Variant ID: $variant_id"
+            echo "$variant_id"
+            return 0
+        else
+            if [ $retry_count -eq 0 ]; then
+                print_error "未找到产品Variant"
+                # 第一次失败时，自动填充数据
+                auto_populate_saleor_data
+                ((retry_count++))
+            else
+                print_error "重试后仍未找到产品Variant，请检查Saleor配置"
+                return 1
+            fi
+        fi
+    done
     
-    if [ -n "$variant_id" ]; then
-        print_success "获取到产品Variant ID: $variant_id"
-        echo "$variant_id"
-        return 0
-    else
-        print_error "未找到产品Variant"
-        return 1
-    fi
+    return 1
 }
 
 # 创建完整的Checkout
