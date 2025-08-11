@@ -1,69 +1,93 @@
-# Saleor 本地下单系统
+# Saleor E-commerce Demo
 
-这是一个在 macOS 本地环境中运行 Saleor 电商系统并完成下单流程的项目。本项目包含了启动 Saleor、Storefront、Dummy Payment App 和 ngrok 的脚本，以及重新安装 Dummy Payment App 的自动化脚本。
+This project provides a set of scripts to demonstrate Saleor e-commerce functionality, including order placement through both GraphQL API and Storefront UI.
 
-## 系统要求
+## Prerequisites
 
-- macOS 操作系统
-- Docker Desktop
-- iTerm2 终端
-- 网络浏览器
+- macOS (tested on Sequoia 15.6)
+- Docker and Docker Compose
+- Python 3
+- curl
+- Chrome browser
 
-## 使用方法
+## Project Structure
 
-### 1. 启动服务
+```
+start_saleor/
+├── s1_start_saleor_and_place_order_by_graphql.sh   # Start Saleor and place order via GraphQL
+├── s2_to_s4_start_and_place_order_by_storefront.sh # Start all services and place order via Storefront
+├── s4_to_s1_stop.sh                                # Stop all services
+└── other utility scripts...
+```
 
-1. **手动启动 Docker Desktop**
-   - 在 macOS 上打开 Docker Desktop 应用
-   - 等待 Docker 引擎完全启动（状态栏图标变为稳定状态）
+## Quick Start
 
-2. **启动所有服务**
-   - 打开 iTerm2 终端
-   - 进入项目目录：
-     ```bash
-     cd /Users/binwu/OOR-local/katas/saleor/start_saleor
-     ```
-   - 运行saleor启动脚本（该脚本会依次启动 saleor、storefront、dummy payment app 和 ngrok 并安装 dummy payment app）：
-     ```bash
-     ./s1_to_s4_start_and_reinstall_dummy_payment_app.sh
-     ```
-   - 等待所有服务启动完成，终端会显示成功信息和相关 URL
+**Important**: The steps below must be executed in order. Step 1 (GraphQL API) must be completed before proceeding to Step 2 (Storefront UI), as it initializes necessary data.
 
-### 2. 在 Storefront 中下单
-
-1. **访问 Storefront**
-   - 在浏览器中打开：[http://localhost:3000/](http://localhost:3000/)
-   - 浏览商品并将商品添加到购物车
-
-2. **完成下单流程**
-   - 进入购物车页面
-   - 点击结账按钮
-   - 填写配送信息
-   - 选择支付方式（将使用已配置的 Dummy Payment App）
-   - 确认订单
-
-### 3. 停止所有服务
-
-当您完成测试后，可以使用以下命令停止所有服务：
+### 1. Place Order via GraphQL API
 
 ```bash
+cd start_saleor
+
+# Start Saleor and place an order using GraphQL API
+./s1_start_saleor_and_place_order_by_graphql.sh
+
+# You should see POST notifications in webhook.site
+```
+
+This script will:
+- Start the Saleor service
+- Create a test order using GraphQL API
+- Initialize shipping address data for admin@example.com
+- Send webhook notifications for order events
+
+### 2. Place Order via Storefront UI 
+
+**Note**: Make sure you have completed Step 1 before proceeding, as it sets up required shipping address data.
+
+```bash
+# Start all services and prepare for Storefront order
+./s2_to_s4_start_and_place_order_by_storefront.sh
+
+# Visit http://localhost:3000/ to access the Storefront
+# Login with admin@example.com/admin
+# Purchase the "monospace tee" product
+# Shipping address should be auto-populated
+```
+
+Note: If you encounter a cookie error when accessing http://localhost:3000/, clear your Chrome browser cache.
+
+You should see webhook POST notifications for the order events.
+
+### 3. Stopping the Services
+
+```bash
+cd start_saleor
 ./s4_to_s1_stop.sh
 ```
 
-该命令会按照启动的逆序依次关闭 ngrok、dummy payment app、storefront 和 saleor 服务。
+## Troubleshooting
 
-## 脚本说明
+1. Cookie Error
+   - If you see a cookie error when accessing the Storefront, clear your Chrome browser cache
+   - Then try accessing http://localhost:3000/ again
 
-- `s1_to_s4_start_and_reinstall_dummy_payment_app.sh` - 自动按顺序启动所有服务并安装 Dummy Payment App
-- `s1_to_s4_start.sh` - 按顺序启动所有服务
-- `s4_to_s1_stop.sh` - 按顺序停止所有服务
-- `s1_start_saleor.sh` - 单独启动 Saleor 服务
-- `s2_start_storefront.sh` - 单独启动 Storefront 服务
-- `s3_start_dummy_payment_app.sh` - 单独启动 Dummy Payment App 服务
-- `s4_start_ngrok.sh` - 单独启动 ngrok 服务
+2. Service Startup
+   - The scripts include waiting mechanisms to ensure services are properly started
+   - If you encounter any service-related errors, ensure all Docker containers are stopped before retrying
 
-## 注意事项
+3. Webhook Notifications
+   - Webhook notifications can be monitored at webhook.site
+   - Ensure you have internet connectivity to receive webhook notifications
 
-- 确保在运行脚本前 Docker Desktop 已经完全启动
-- 首次启动可能需要较长时间，因为需要下载和构建 Docker 镜像
-- 如果遇到问题，可以尝试重新运行 `s1_to_s4_start_and_reinstall_dummy_payment_app.sh` 脚本
+## Default Credentials
+
+- Admin Login:
+  - Email: admin@example.com
+  - Password: admin
+
+## Additional Information
+
+- The GraphQL Playground is available at: http://localhost:8000/graphql/
+- The Storefront runs on: http://localhost:3000/
+- Webhook notifications are sent to webhook.site for monitoring order events
