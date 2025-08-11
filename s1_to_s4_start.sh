@@ -9,10 +9,6 @@ echo "开始启动所有服务..."
 echo "步骤 1/4: 启动 Saleor..."
 bash /Users/binwu/OOR-local/katas/saleor/start_saleor/s1_start_saleor.sh
 
-# 2. 等待30秒，确保 Saleor 启动完成
-echo "等待 30 秒，确保 Saleor 启动完成..."
-sleep 30
-
 # 3. 运行 s2_start_storefront.sh
 echo "步骤 2/4: 启动 Storefront..."
 bash /Users/binwu/OOR-local/katas/saleor/start_saleor/s2_start_storefront.sh

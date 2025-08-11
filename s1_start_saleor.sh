@@ -41,7 +41,7 @@ tell application "iTerm"
         -- 执行populatedb命令
         write text "# 开始执行populatedb命令"
         write text "docker compose run --rm api python3 manage.py populatedb"
-        delay 17
+        delay 15
         
         -- 创建超级用户
         write text "# 开始创建超级用户"
@@ -51,6 +51,7 @@ tell application "iTerm"
         -- 执行docker compose up命令
         write text "# 开始执行docker compose up命令"
         write text "docker compose up"
+        delay 20
     end tell
 end tell
 EOF
