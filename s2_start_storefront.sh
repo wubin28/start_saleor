@@ -18,7 +18,13 @@ tell application "iTerm"
         -- 等待一小段时间确保命令执行完成
         delay 0.5
         
-        -- 执行第二个命令：启动开发服务器
+        -- 执行第二个命令：安装依赖
+        write text "pnpm install"
+        
+        -- 等待安装完成
+        delay 2.0
+        
+        -- 执行第三个命令：启动开发服务器
         write text "pnpm run dev"
     end tell
 end tell
