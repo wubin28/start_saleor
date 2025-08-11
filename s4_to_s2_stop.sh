@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# s4_to_s1_stop.sh
+# s4_to_s2_stop.sh
 # 功能：按照启动的逆序关闭所有服务，并在每个服务关闭后等待指定的时间
 
 echo "开始关闭所有服务..."
@@ -28,10 +28,6 @@ bash /Users/binwu/OOR-local/katas/saleor/start_saleor/s2_stop_storefront.sh
 # 6. 等待1秒
 echo "等待 1 秒..."
 sleep 1
-
-# 7. 运行 s1_stop_saleor.sh
-echo "步骤 4/4: 关闭 Saleor..."
-bash /Users/binwu/OOR-local/katas/saleor/start_saleor/s1_stop_saleor.sh
 
 # 8. 等待1秒
 echo "等待 1 秒..."
