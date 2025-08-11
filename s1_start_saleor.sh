@@ -18,7 +18,38 @@ tell application "iTerm"
         -- 等待一小段时间确保命令执行完成
         delay 0.5
         
-        -- 执行第二个命令：启动docker compose
+        -- 执行docker compose down命令
+        write text "# 开始执行docker compose down命令"
+        write text "docker compose down"
+        delay 3
+        
+        -- 执行docker compose down -v命令
+        write text "# 开始执行docker compose down -v命令"
+        write text "docker compose down -v"
+        delay 3
+        
+        -- 执行数据库迁移命令
+        write text "# 开始执行数据库迁移命令"
+        write text "docker compose run --rm api python3 manage.py migrate"
+        delay 75
+        
+        -- 执行setup命令
+        write text "# 开始执行setup命令"
+        write text "docker compose run --rm api python3 manage.py setup"
+        delay 3
+        
+        -- 执行populatedb命令
+        write text "# 开始执行populatedb命令"
+        write text "docker compose run --rm api python3 manage.py populatedb"
+        delay 17
+        
+        -- 创建超级用户
+        write text "# 开始创建超级用户"
+        write text "docker compose run --rm -e DJANGO_SUPERUSER_USERNAME=admin -e DJANGO_SUPERUSER_EMAIL=admin@example.com -e DJANGO_SUPERUSER_PASSWORD=admin api python3 manage.py createsuperuser --noinput"
+        delay 6
+        
+        -- 执行docker compose up命令
+        write text "# 开始执行docker compose up命令"
         write text "docker compose up"
     end tell
 end tell
