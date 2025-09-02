@@ -1,0 +1,64 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+title Container Diagram - Saleor E-commerce Demo System
+
+Person(user, "User", "Customer purchasing products online")
+
+System_Ext(webhook_site, "webhook.site", "External webhook notification monitoring system")
+
+Container_Boundary(saleor_ecosystem, "Saleor E-commerce Ecosystem") {
+    
+    Container(storefront, "Storefront", "React.js/Next.js 15", "E-commerce frontend store\nPort: 3000")
+    
+    Container(saleor_core, "Saleor Core API", "Django 5.2/GraphQL", "Headless e-commerce backend\nPort: 8000")
+    
+    Container(payment_app, "Dummy Payment App", "Node.js", "Test payment gateway\nPort: 3000")
+    
+    Container(saleor_platform, "Saleor Platform", "Docker Compose", "Service orchestration platform\nOne-click startup")
+    
+    Container(start_scripts, "Start Scripts", "Bash Scripts", "Data cleanup, preparation\nand startup automation")
+    
+    Container(ui_testing, "UI Testing Scripts", "Playwright", "End-to-end testing\nautomation")
+    
+    ContainerDb(postgresql, "PostgreSQL", "Database", "Product, order, user data")
+    ContainerDb(redis, "Redis", "Cache", "Session and cache storage")
+    Container(mailpit, "Mailpit", "Email Testing", "Email interface\nPort: 8025")
+    Container(jaeger, "Jaeger", "APM Monitoring", "Application monitoring\nPort: 16686")
+}
+
+' User interactions - Order Flow
+Rel(user, storefront, "1. Browses products & places orders", "HTTPS")
+
+' Core API interactions - Order Flow
+Rel(storefront, saleor_core, "2. Gets product info & creates order", "GraphQL over HTTPS")
+Rel(saleor_core, postgresql, "3. Queries products & saves order", "SQL")
+Rel(saleor_core, redis, "Caches data", "Redis Protocol")
+
+' Payment integration - Order Flow
+Rel(saleor_core, payment_app, "4. Processes payment", "HTTPS")
+Rel(payment_app, saleor_core, "5. Returns payment result", "HTTPS")
+
+' External webhook notifications - Order Flow
+Rel(saleor_core, webhook_site, "6. Sends order notifications", "HTTP POST")
+
+' Platform orchestration
+Rel(saleor_platform, saleor_core, "Orchestrates", "Docker")
+Rel(saleor_platform, storefront, "Orchestrates", "Docker")
+Rel(saleor_platform, payment_app, "Orchestrates", "Docker")
+Rel(saleor_platform, postgresql, "Manages", "Docker")
+Rel(saleor_platform, redis, "Manages", "Docker")
+Rel(saleor_platform, mailpit, "Manages", "Docker")
+Rel(saleor_platform, jaeger, "Manages", "Docker")
+
+' Script controls
+Rel(start_scripts, saleor_platform, "Controls startup/shutdown", "Docker CLI")
+Rel(start_scripts, saleor_core, "Direct API calls", "GraphQL")
+
+' Testing
+Rel(ui_testing, storefront, "Automated testing", "Browser automation")
+
+' Email notifications - Order Flow
+Rel(saleor_core, mailpit, "7. Sends order confirmation email", "SMTP")
+
+@enduml

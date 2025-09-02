@@ -1,0 +1,85 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+' Dark background theme - white text and lines
+skinparam ArrowColor white
+skinparam ArrowFontColor white
+skinparam TitleFontColor white
+skinparam RectangleFontColor white
+skinparam RectangleBorderColor white
+skinparam PackageFontColor white
+skinparam PackageBorderColor white
+skinparam PersonFontColor white
+skinparam PersonBorderColor white
+skinparam SystemFontColor white
+skinparam SystemBorderColor white
+skinparam DatabaseFontColor white
+skinparam DatabaseBorderColor white
+skinparam ComponentFontColor white
+skinparam ComponentBorderColor white
+skinparam ContainerBoundaryFontColor white
+skinparam ContainerBoundaryBorderColor white
+skinparam BoundaryFontColor white
+skinparam BoundaryBorderColor white
+skinparam rectangle {
+  FontColor white
+  BorderColor white
+}
+skinparam package {
+  FontColor white
+  BorderColor white
+}
+skinparam DefaultFontColor white
+skinparam DefaultTextAlignment center
+skinparam Boundary {
+  FontColor white
+  BorderColor white
+}
+skinparam Frame {
+  FontColor white
+  BorderColor white
+}
+
+title Container Diagram - Saleor E-commerce Demo System
+
+Person(user, "User", "Customer purchasing products online")
+
+System_Ext(webhook_site, "webhook.site", "External webhook notification monitoring system")
+
+rectangle "Saleor E-commerce Ecosystem\n[container]" as saleor_ecosystem #transparent;line.dashed:white;text:white {
+    
+    Container(storefront, "Storefront", "React.js/Next.js 15", "E-commerce frontend store\nPort: 3000")
+    
+    Container(saleor_core, "Saleor Core API", "Django 5.2/GraphQL", "Headless e-commerce backend\nPort: 8000")
+    
+    Container(payment_app, "Dummy Payment App", "Node.js", "Test payment gateway\nPort: 3000")
+    
+    Container(saleor_platform, "Saleor Platform", "Docker Compose", "Service orchestration platform\nOne-click startup")
+    
+    ContainerDb(postgresql, "PostgreSQL", "Database", "Product, order, user data")
+    ContainerDb(redis, "Redis", "Cache", "Session and cache storage")
+}
+
+' User interactions - Order Flow
+Rel(user, storefront, "1. Browses products & places orders", "HTTPS")
+
+' Core API interactions - Order Flow
+Rel(storefront, saleor_core, "2. Gets product info & creates order", "GraphQL over HTTPS")
+Rel(saleor_core, postgresql, "3. Queries products & saves order", "SQL")
+Rel(saleor_core, redis, "Caches data", "Redis Protocol")
+
+' Payment integration - Order Flow
+Rel(saleor_core, payment_app, "4. Processes payment", "HTTPS")
+Rel(payment_app, saleor_core, "5. Returns payment result", "HTTPS")
+
+' External webhook notifications - Order Flow
+Rel(saleor_core, webhook_site, "6. Sends order notifications", "HTTP POST")
+
+' Platform orchestration
+Rel(saleor_platform, saleor_core, "Orchestrates", "Docker")
+Rel(saleor_platform, storefront, "Orchestrates", "Docker")
+Rel(saleor_platform, payment_app, "Orchestrates", "Docker")
+Rel(saleor_platform, postgresql, "Manages", "Docker")
+Rel(saleor_platform, redis, "Manages", "Docker")
+
+@enduml
