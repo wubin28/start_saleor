@@ -2,6 +2,12 @@
 
 # reinstall_dummy_payment_app_simple.sh
 # 功能：自动重新安装 Dummy Payment App（简化版，使用已验证的方法）
+# 1. 先启动所有服务（包括 Saleor、Storefront、Dummy Payment App 和 ngrok）
+# 2. 获取 ngrok URL（用于外部访问 Dummy Payment App）
+# 3. 获取 Saleor 认证 token
+# 4. 查找并卸载旧的 Dummy Payment App（如果存在）
+# 5. 使用 GraphQL API 安装新的 Dummy Payment App，提供 manifest URL
+# 6. 验证安装结果
 # 适用于：macOS Sequoia 15.6 + iTerm2
 
 echo "🚀 开始自动重新安装 Dummy Payment App（简化版）..."

@@ -6,7 +6,7 @@
 echo "开始关闭所有服务..."
 
 # 1. 运行 s4_stop_ngrok.sh
-echo "步骤 1/4: 关闭 Ngrok..."
+echo "步骤 1/4: 关闭 Ngrok （以便让Saleor Backend通过安全隧道将公网流量转发到本地Dummy Payment App的http://localhost:3001）..."
 bash /Users/binwu/OOR-local/katas/saleor/start_saleor/s4_stop_ngrok.sh
 
 # 2. 等待1秒

@@ -24,7 +24,7 @@ tell application "iTerm"
         delay 3
         
         -- 执行docker compose down -v命令
-        write text "# 开始执行docker compose down -v命令"
+        write text "# 开始执行docker compose down -v命令删除所有数据卷以清空数据"
         write text "docker compose down -v"
         delay 3
         
