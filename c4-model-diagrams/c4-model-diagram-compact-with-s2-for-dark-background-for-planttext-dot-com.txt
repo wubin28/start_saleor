@@ -1,0 +1,88 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+' Dark background theme - white text and lines
+skinparam ArrowColor white
+skinparam ArrowFontColor white
+skinparam TitleFontColor white
+skinparam RectangleFontColor white
+skinparam RectangleBorderColor white
+skinparam PackageFontColor white
+skinparam PackageBorderColor white
+skinparam PersonFontColor white
+skinparam PersonBorderColor white
+skinparam SystemFontColor white
+skinparam SystemBorderColor white
+skinparam DatabaseFontColor white
+skinparam DatabaseBorderColor white
+skinparam ComponentFontColor white
+skinparam ComponentBorderColor white
+skinparam ContainerBoundaryFontColor white
+skinparam ContainerBoundaryBorderColor white
+skinparam BoundaryFontColor white
+skinparam BoundaryBorderColor white
+skinparam rectangle {
+  FontColor white
+  BorderColor white
+}
+skinparam package {
+  FontColor white
+  BorderColor white
+}
+skinparam DefaultFontColor white
+skinparam DefaultTextAlignment center
+skinparam Boundary {
+  FontColor white
+  BorderColor white
+}
+skinparam Frame {
+  FontColor white
+  BorderColor white
+}
+
+title S2 Workflow - Storefront + ngrok Tunneling Automation
+
+Person(user, "User", "Customer purchasing products online")
+
+System_Ext(webhook_site, "webhook.site", "External webhook notification monitoring system")
+System_Ext(ngrok, "ngrok", "Secure tunneling service\nExposes local apps to internet")
+
+rectangle "Saleor E-commerce Ecosystem\n[container]" as saleor_ecosystem #transparent;line.dashed:white;text:white {
+    
+    Container(storefront, "Storefront", "React.js/Next.js 15", "E-commerce frontend store\nPort: 3000")
+    
+    Container(saleor_core, "Saleor Core API", "Django 5.2/GraphQL", "Headless e-commerce backend\nPort: 8000")
+    
+    Container(payment_app, "Dummy Payment App", "Node.js", "Test payment gateway\nPort: 3001")
+    
+    Container(saleor_platform, "Saleor Platform", "Docker Compose", "Service orchestration platform\nOne-click startup")
+    
+    Container(s2_script, "S2 Script", "Bash/GraphQL", "s2_to_s4_start_and_place_order_by_storefront.sh\nStorefront automation with ngrok")
+    
+    ContainerDb(postgresql, "PostgreSQL", "Database", "Product, order, user data")
+    ContainerDb(redis, "Redis", "Cache", "Session and cache storage")
+}
+
+' === S2 Workflow: Storefront + ngrok Tunneling ===
+Rel(s2_script, ngrok, "1. Start ngrok tunnel", "CLI")
+Rel(ngrok, payment_app, "2. Expose payment app", "HTTPS Tunnel")
+Rel(s2_script, saleor_core, "3. Get auth token", "GraphQL")
+Rel(s2_script, saleor_core, "4. Install payment app via ngrok", "GraphQL")
+Rel(saleor_core, ngrok, "5. Fetch app manifest", "HTTPS")
+Rel(ngrok, payment_app, "6. Forward manifest request", "HTTP")
+Rel(user, storefront, "7. Browse & place order", "HTTPS")
+Rel(storefront, saleor_core, "8. Create order", "GraphQL")
+Rel(saleor_core, ngrok, "9. Process payment via tunnel", "HTTPS")
+Rel(ngrok, payment_app, "10. Forward payment request", "HTTP")
+Rel(payment_app, webhook_site, "11. Send payment notification", "HTTP POST")
+
+' === Infrastructure ===
+Rel(saleor_core, postgresql, "Store orders & products", "SQL")
+Rel(saleor_core, redis, "Cache data", "Redis Protocol")
+Rel(saleor_platform, saleor_core, "Orchestrates", "Docker")
+Rel(saleor_platform, storefront, "Orchestrates", "Docker")
+Rel(saleor_platform, payment_app, "Orchestrates", "Docker")
+Rel(saleor_platform, postgresql, "Manages", "Docker")
+Rel(saleor_platform, redis, "Manages", "Docker")
+
+@enduml

@@ -1,0 +1,75 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+' Dark background theme - white text and lines
+skinparam ArrowColor white
+skinparam ArrowFontColor white
+skinparam TitleFontColor white
+skinparam RectangleFontColor white
+skinparam RectangleBorderColor white
+skinparam PackageFontColor white
+skinparam PackageBorderColor white
+skinparam PersonFontColor white
+skinparam PersonBorderColor white
+skinparam SystemFontColor white
+skinparam SystemBorderColor white
+skinparam DatabaseFontColor white
+skinparam DatabaseBorderColor white
+skinparam ComponentFontColor white
+skinparam ComponentBorderColor white
+skinparam ContainerBoundaryFontColor white
+skinparam ContainerBoundaryBorderColor white
+skinparam BoundaryFontColor white
+skinparam BoundaryBorderColor white
+skinparam rectangle {
+  FontColor white
+  BorderColor white
+}
+skinparam package {
+  FontColor white
+  BorderColor white
+}
+skinparam DefaultFontColor white
+skinparam DefaultTextAlignment center
+skinparam Boundary {
+  FontColor white
+  BorderColor white
+}
+skinparam Frame {
+  FontColor white
+  BorderColor white
+}
+
+title S1 Workflow - Direct GraphQL API Automation
+
+System_Ext(webhook_site, "webhook.site", "External webhook notification monitoring system")
+
+rectangle "Saleor E-commerce Ecosystem\n[container]" as saleor_ecosystem #transparent;line.dashed:white;text:white {
+    
+    Container(saleor_core, "Saleor Core API", "Django 5.2/GraphQL", "Headless e-commerce backend\nPort: 8000")
+    
+    Container(saleor_platform, "Saleor Platform", "Docker Compose", "Service orchestration platform\nOne-click startup")
+    
+    Container(s1_script, "S1 Script", "Bash/GraphQL", "s1_start_saleor_and_place_order_by_graphql.sh\nDirect API automation")
+    
+    ContainerDb(postgresql, "PostgreSQL", "Database", "Product, order, user data")
+    ContainerDb(redis, "Redis", "Cache", "Session and cache storage")
+}
+
+' === S1 Workflow: Direct GraphQL API Automation ===
+Rel(s1_script, saleor_core, "1. Authenticate & get token", "GraphQL")
+Rel(s1_script, saleor_core, "2. Create app & webhook", "GraphQL")
+Rel(s1_script, saleor_core, "3. Get product variants", "GraphQL")
+Rel(s1_script, saleor_core, "4. Create checkout", "GraphQL")
+Rel(s1_script, saleor_core, "5. Create order from checkout", "GraphQL")
+Rel(saleor_core, webhook_site, "6. Send order notification", "HTTP POST")
+Rel(s1_script, saleor_core, "7. Mark order as paid", "GraphQL")
+
+' === Infrastructure ===
+Rel(saleor_core, postgresql, "Store orders & products", "SQL")
+Rel(saleor_core, redis, "Cache data", "Redis Protocol")
+Rel(saleor_platform, saleor_core, "Orchestrates", "Docker")
+Rel(saleor_platform, postgresql, "Manages", "Docker")
+Rel(saleor_platform, redis, "Manages", "Docker")
+
+@enduml
