@@ -121,32 +121,158 @@
 
 ## 14. 让AI（windsurf搭配Claude Sonnet 3.7大模型）将s1_to_s4_start_and_reinstall_dummy_payment_app.sh中的用GraphQL API下单的脚本提取到另一个脚本文件s1_start_saleor_and_place_order_by_graphql.sh中（参见02-03-14-move-order-placement-logic.md中的提示词）
 
-14.1 启动 Saleor 服务
-- 调用 `s1_start_saleor.sh` 启动 Saleor 服务
-- 等待 Saleor GraphQL API (http://localhost:8000/graphql/) 可访问
 
-14.2 设置 Webhook
-- 测试 webhook.site 连接
-- 获取管理员用户认证 Token
-  - 如果管理员用户不存在，自动创建管理员用户
-- 创建 App（具有 HANDLE_CHECKOUTS 和 MANAGE_ORDERS 权限）
-- 创建 Webhook（订阅 ORDER_CREATED 事件）
+```markdown
+12.1 启动Saleor服务
 
-14.3 创建订单
-- 检查产品数据
-  - 如果没有产品数据，自动运行 `populatedb` 命令填充示例数据
-- 获取产品 Variant ID
-- 创建 Checkout（包含客户信息、产品和地址）
-- 设置配送方式
-- 使用 App Token 创建订单（触发 Webhook）
+12.2 获取用户认证Token
 
-14.4 处理订单支付
-- 标记订单为已支付
-- 验证订单支付状态
+12.3 创建App
 
-14.5 输出执行结果
-- 显示所有操作的 ID 和结果
-- 提供 Webhook URL 和 GraphQL Playground 链接
+12.4 创建Webhook
+
+12.5 获取产品信息
+
+12.6 创建完整的Checkout
+
+12.7 设置配送方式
+
+12.8 创建订单并触发Webhook
+
+12.9 标记订单为已支付
+
+12.10 验证支付状态
+
+12.11 执行总结
+```
+
+### 初始化阶段
+```bash
+local WEBHOOK_URL="https://webhook.site/99475069-12a9-4a24-8952-b3246f7ca573"
+```
+设置用于接收订单事件通知的Webhook URL。
+
+### 第0步：启动Saleor服务
+```bash
+print_step "0" "启动 Saleor 服务"
+./s1_start_saleor.sh  # 如果文件存在则执行
+```
+- 调用外部脚本启动Saleor后端服务
+- 如果启动脚本不存在，假设服务已经在运行
+
+### 第1步：等待服务启动并测试连接
+```bash
+wait_for_service "http://localhost:8000/graphql/" "Saleor GraphQL"
+test_webhook_connection "$WEBHOOK_URL"
+```
+- **等待GraphQL服务**：循环检测GraphQL端点是否可访问（最多30次，每次间隔2秒）
+- **测试Webhook连接**：向webhook.site发送测试POST请求，验证连接是否正常
+
+### 第2步：认证和权限设置 (Step 1: Add Webhook)
+
+#### 2.1 获取用户认证Token
+```bash
+AUTH_TOKEN=$(get_auth_token_simple)
+```
+- 使用管理员账号（admin@example.com/admin）执行`tokenCreate` mutation
+- 如果认证失败，自动创建管理员用户后重试
+- 返回用于后续API调用的认证token
+
+#### 2.2 创建App
+```bash
+APP_RESULT=$(create_app "$AUTH_TOKEN")
+APP_ID="${APP_RESULT%|*}"
+APP_TOKEN="${APP_RESULT#*|}"
+```
+- 创建名为"My App"的应用
+- 授予`HANDLE_CHECKOUTS`和`MANAGE_ORDERS`权限
+- 返回App ID和App Token（用于订单操作）
+
+#### 2.3 创建Webhook
+```bash
+WEBHOOK_ID=$(create_webhook "$AUTH_TOKEN" "$APP_ID" "$WEBHOOK_URL")
+```
+- 为App创建Webhook，监听`ORDER_CREATED`事件
+- 当订单创建时，Saleor会向指定URL发送POST通知
+- 验证Webhook配置是否正确
+
+### 第3步：订单创建流程 (Step 2: Create an Order)
+
+#### 3.1 获取产品信息
+```bash
+VARIANT_ID=$(get_product_variant "$AUTH_TOKEN")
+```
+- 查询前5个产品及其变体信息
+- 如果没有产品数据，自动运行`populatedb`命令填充示例数据
+- 返回第一个可用的产品变体ID
+
+#### 3.2 创建完整的Checkout
+```bash
+CHECKOUT_RESULT=$(create_checkout "$AUTH_TOKEN" "$VARIANT_ID")
+CHECKOUT_ID="${CHECKOUT_RESULT%|*}"
+SHIPPING_METHOD_ID="${CHECKOUT_RESULT#*|}"
+```
+- 创建包含完整信息的购物车：
+  - 产品：1个指定变体的商品
+  - 客户邮箱：webhook-test@example.com
+  - 账单地址：洛杉矶的虚拟地址
+  - 配送地址：与账单地址相同
+- 返回Checkout ID和可用的配送方式ID
+
+#### 3.3 设置配送方式
+```bash
+set_shipping_method "$AUTH_TOKEN" "$CHECKOUT_ID" "$SHIPPING_METHOD_ID"
+```
+- 为checkout设置配送方式
+- 更新总价格（包含配送费用）
+
+#### 3.4 创建订单并触发Webhook
+```bash
+ORDER_ID=$(create_order_from_checkout "$APP_TOKEN" "$CHECKOUT_ID")
+```
+- **切换到App Token**：使用App权限而非用户权限
+- 从checkout创建正式订单
+- **触发Webhook**：订单创建成功后，Saleor自动向webhook.site发送ORDER_CREATED事件
+- 等待5秒让webhook有时间触发
+
+### 第4步：支付处理 (Step 3: Mark Order as Paid)
+
+#### 4.1 标记订单为已支付
+```bash
+mark_order_paid "$APP_TOKEN" "$ORDER_ID"
+```
+- 使用App Token将订单状态更改为已支付
+- 模拟支付完成的场景
+
+#### 4.2 验证支付状态
+```bash
+verify_payment_status "$APP_TOKEN" "$ORDER_ID"
+```
+- 查询订单详情确认支付状态
+- 检查`paymentStatus`、`authorizeStatus`、`chargeStatus`等字段
+
+### 第5步：执行总结
+脚本最后输出完整的操作总结：
+```bash
+echo -e "📋 操作总结:"
+echo -e "   • ✅ 用户认证Token获取成功"
+echo -e "   • ✅ App创建成功 (ID: $APP_ID)"
+echo -e "   • ✅ Webhook创建成功 (ID: $WEBHOOK_ID)"
+echo -e "   • ✅ 产品Variant获取成功 (ID: $VARIANT_ID)"
+echo -e "   • ✅ Checkout创建成功 (ID: $CHECKOUT_ID)"
+echo -e "   • ✅ 订单创建成功 (ID: $ORDER_ID)"
+echo -e "   • ✅ 订单支付标记完成"
+```
+
+## 核心功能总结
+
+1. **服务启动与连接测试**：确保Saleor后端服务和Webhook服务都可用
+2. **权限管理**：建立完整的认证和授权体系（用户Token + App Token）
+3. **Webhook集成**：配置订单事件的实时通知机制
+4. **电商流程自动化**：完整模拟从商品选择到支付完成的购物流程
+5. **错误处理**：包含自动重试、数据填充等容错机制
+
+这个脚本实现了一个完整的Saleor电商平台GraphQL API的自动化测试流程，涵盖了认证、商品管理、订单处理、支付和事件通知等核心功能。
 
 ## 15. 让AI生成脚本s2_to_s4_start_and_place_order_by_storefront.sh来配置Storefront、dummy payment app和ngrok以便能从Storefront Web UI下单
 
