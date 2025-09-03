@@ -1,4 +1,4 @@
-# Start Saleor and Place Order by GraphQL
+# Place Order by GraphQL API and Storefront Web UI
 
 ## 1. 用AI生成脚本s1_start_saleor.sh
 
