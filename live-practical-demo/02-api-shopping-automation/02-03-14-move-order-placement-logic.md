@@ -316,3 +316,75 @@ query CheckOrderStatus {
 }
 ```】
 ```
+
+Cursor with Claude Sonnet 4:
+
+```markdown
+我将基于参考脚本创建一个新的脚本，用于启动 Saleor 并通过 GraphQL 下单。让我分析现有脚本并创建新脚本。
+
+[3 tools called]
+
+现在让我设置脚本的可执行权限：
+
+[2 tools called]
+
+✅ 我已经成功创建了 `s1_start_saleor_and_place_order_by_graphql.sh` 脚本，该脚本实现了以下功能：
+
+## 🎯 主要特性
+
+### 📋 完整的 GraphQL 自动化流程
+1. **第一步：Add Webhook**
+   - 获取用户认证Token
+   - 创建App并获取App Token
+   - 创建Webhook（包含ORDER_CREATED事件）
+
+2. **第二步：Create an Order**
+   - 获取产品Variant ID
+   - 创建完整的Checkout
+   - 设置配送方式
+   - 创建订单并触发Webhook
+
+3. **第三步：Mark Order as Paid**
+   - 标记订单为已支付
+   - 验证支付状态
+
+### 🔍 详细的日志输出
+- **GraphQL请求日志**：每个GraphQL操作都有详细的请求和响应日志
+- **调试信息**：包含Token、ID等关键信息的前缀显示
+- **颜色编码**：使用不同颜色区分不同类型的消息
+- **步骤跟踪**：清晰标记每个步骤的进度
+
+### 🛠️ 技术实现
+- 基于参考脚本的成熟架构
+- 使用已验证的GraphQL执行函数
+- 包含错误处理和服务等待机制
+- 自动启动Saleor服务
+- 内置webhook连接测试
+
+### 🌐 预配置参数
+- **Webhook URL**: `https://webhook.site/99475069-12a9-4a24-8952-b3246f7ca573`
+- **测试邮箱**: `webhook-test@example.com`
+- **管理员登录**: `admin@example.com / admin`
+
+## 🚀 使用方法
+
+```bash
+./s1_start_saleor_and_place_order_by_graphql.sh
+```
+
+脚本会自动：
+1. 启动Saleor服务（如果存在`s1_start_saleor.sh`）
+2. 等待服务启动完成
+3. 执行完整的GraphQL自动化下单流程
+4. 在每一步都输出详细的日志信息
+5. 最终提供完整的操作总结
+
+## 📊 日志特性
+- 🔗 **GraphQL请求日志**：显示正在执行的操作
+- 📦 **响应日志**：显示响应长度和内容摘要
+- 🔍 **调试信息**：Token、ID等关键信息
+- ✅ **成功标记**：每个步骤的成功确认
+- ⚠️ **警告信息**：潜在问题提示
+
+这个脚本完全基于你提供的手工操作步骤，将所有GraphQL查询和操作自动化，并添加了丰富的日志输出以便跟踪和调试。
+```
