@@ -18,16 +18,6 @@ tell application "iTerm"
         -- 等待一小段时间确保命令执行完成
         delay 0.5
         
-        -- 执行docker compose down命令
-        write text "# 开始执行docker compose down命令"
-        write text "docker compose down"
-        delay 3
-        
-        -- 执行docker compose down -v命令
-        write text "# 开始执行docker compose down -v命令删除所有数据卷以清空数据"
-        write text "docker compose down -v"
-        delay 3
-        
         -- 执行数据库迁移命令
         write text "# 开始执行数据库迁移命令"
         write text "docker compose run --rm api python3 manage.py migrate"
