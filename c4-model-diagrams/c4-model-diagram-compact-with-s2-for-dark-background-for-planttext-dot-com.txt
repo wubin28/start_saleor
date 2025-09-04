@@ -42,7 +42,7 @@ skinparam Frame {
 
 title S2 Workflow - Storefront + ngrok Tunneling Automation
 
-Person(user, "User", "Customer purchasing products online")
+Person(user, "User", "System administrator or developer")
 
 System_Ext(webhook_site, "webhook.site", "External webhook notification monitoring system")
 System_Ext(ngrok, "ngrok", "Secure tunneling service\nExposes local apps to internet")
@@ -63,18 +63,20 @@ rectangle "Saleor E-commerce Ecosystem\n[container]" as saleor_ecosystem #transp
     ContainerDb(redis, "Redis", "Cache", "Session and cache storage")
 }
 
-' === S2 Workflow: Storefront + ngrok Tunneling ===
-Rel(s2_script, ngrok, "1. Start ngrok tunnel", "CLI")
-Rel(ngrok, payment_app, "2. Expose payment app", "HTTPS Tunnel")
-Rel(s2_script, saleor_core, "3. Get auth token", "GraphQL")
-Rel(s2_script, saleor_core, "4. Install payment app via ngrok", "GraphQL")
-Rel(saleor_core, ngrok, "5. Fetch app manifest", "HTTPS")
-Rel(ngrok, payment_app, "6. Forward manifest request", "HTTP")
-Rel(user, storefront, "7. Browse & place order", "HTTPS")
-Rel(storefront, saleor_core, "8. Create order", "GraphQL")
-Rel(saleor_core, ngrok, "9. Process payment via tunnel", "HTTPS")
-Rel(ngrok, payment_app, "10. Forward payment request", "HTTP")
-Rel(payment_app, webhook_site, "11. Send payment notification", "HTTP POST")
+' === User initiates S2 Script ===
+Rel(user, s2_script, "Executes", "Command line")
+
+' === S2 Script starts services ===
+Rel(s2_script, storefront, "Starts storefront service", "Docker commands")
+Rel(s2_script, payment_app, "Starts payment app", "Docker commands")
+Rel(s2_script, ngrok, "Starts ngrok tunnel", "CLI")
+
+' === S2 Workflow: Simplified Storefront + ngrok Tunneling ===
+Rel(s2_script, saleor_core, "Performs payment app installation\n[Authentication, App management]", "GraphQL API")
+Rel(ngrok, payment_app, "Provides secure tunnel\n[Expose local app, Forward requests]", "HTTPS/HTTP")
+Rel(saleor_core, ngrok, "Accesses payment services\n[Fetch manifest, Process payments]", "HTTPS")
+Rel(storefront, saleor_core, "Create order", "GraphQL")
+Rel(payment_app, webhook_site, "Send payment notification", "HTTP POST")
 
 ' === Infrastructure ===
 Rel(saleor_core, postgresql, "Store orders & products", "SQL")
