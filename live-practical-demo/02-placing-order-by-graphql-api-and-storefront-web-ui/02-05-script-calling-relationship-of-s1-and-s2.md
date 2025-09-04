@@ -10,6 +10,19 @@ graph TD
     style B fill:#bbf,stroke:#333,stroke-width:2px,color:#000
 ```
 
+```plantuml
+@startuml
+skinparam backgroundColor transparent
+skinparam defaultFontName Arial
+skinparam ArrowColor white
+
+rectangle "s1_start_saleor_and_place_order_by_graphql.sh" as A #FFCCFF
+rectangle "s1_start_saleor.sh" as B #CCCCFF
+
+A --> B
+@enduml
+```
+
 
 
 ## Script Calling Relationship of s2_to_s4_start_and_place_order_by_storefront.sh
@@ -26,4 +39,23 @@ graph TD
     style C fill:#bbf,stroke:#333,stroke-width:2px,color:#000
     style D fill:#bbf,stroke:#333,stroke-width:2px,color:#000
     style E fill:#bbf,stroke:#333,stroke-width:2px,color:#000
+```
+
+```plantuml
+@startuml
+skinparam backgroundColor transparent
+skinparam defaultFontName Arial
+skinparam ArrowColor white
+
+rectangle "s2_to_s4_start_and_place_order_by_storefront.sh" as A #FFCCFF
+rectangle "s2_to_s4_start.sh" as B #CCCCFF
+rectangle "s2_start_storefront.sh" as C #CCCCFF
+rectangle "s3_start_dummy_payment_app.sh" as D #CCCCFF
+rectangle "s4_start_ngrok.sh" as E #CCCCFF
+
+A --> B
+B --> C
+B --> D
+B --> E
+@enduml
 ```
